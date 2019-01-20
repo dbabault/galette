@@ -95,6 +95,45 @@ $app->get(
         $spam_pass = $spam->newImage();
         $spam_img = $spam->getImage();
 
+        // members
+        $members = [];
+        $m = new Members();
+        $required_fields = array(
+            'id_adh',
+            'nom_adh',
+            'prenom_adh'
+        );
+        $list_members = $m->getList(false, $required_fields, true);
+
+        if (count($list_members) > 0) {
+            foreach ($list_members as $lmember) {
+                $pk = Adherent::PK;
+                $sname = mb_strtoupper($lmember->nom_adh, 'UTF-8') .
+                    ' ' . ucwords(mb_strtolower($lmember->prenom_adh, 'UTF-8')) .
+                    ' (' . $lmember->id_adh . ')';
+                $members[$lmember->$pk] = $sname;
+            }
+        }
+
+        $params['members'] = [
+            'filters'   => $m->getFilters(),
+            'count'     => $m->getCount()
+        ];
+
+        //check if current attached member is part of the list
+        if ($member->hasParent()) {
+            if (!isset($members[$member->parent->id])) {
+                $members =
+                    [$member->parent->id => $member->parent->getSName()] +
+                    $members
+                ;
+            }
+        }
+
+        if (count($members)) {
+            $params['members']['list'] = $members;
+        }
+
         // display page
         $this->view->render(
             $response,
@@ -115,7 +154,7 @@ $app->get(
                 'spam_img'          => $spam_img,
                 'fieldsets'         => $form_elements['fieldsets'],
                 'hidden_elements'   => $form_elements['hiddens']
-            )
+            ) + $params
         );
         return $response;
     }
@@ -765,6 +804,45 @@ $app->get(
             $this->login,
             $member->id == ''
         );
+
+        // members
+        $members = [];
+        $m = new Members();
+        $required_fields = array(
+            'id_adh',
+            'nom_adh',
+            'prenom_adh'
+        );
+        $list_members = $m->getList(false, $required_fields, true);
+
+        if (count($list_members) > 0) {
+            foreach ($list_members as $lmember) {
+                $pk = Adherent::PK;
+                $sname = mb_strtoupper($lmember->nom_adh, 'UTF-8') .
+                    ' ' . ucwords(mb_strtolower($lmember->prenom_adh, 'UTF-8')) .
+                    ' (' . $lmember->id_adh . ')';
+                $members[$lmember->$pk] = $sname;
+            }
+        }
+
+        $route_params['members'] = [
+            'filters'   => $m->getFilters(),
+            'count'     => $m->getCount()
+        ];
+
+        //check if current attached member is part of the list
+        if ($member->hasParent()) {
+            if (!isset($members[$member->parent->id])) {
+                $members =
+                    [$member->parent->id => $member->parent->getSName()] +
+                    $members
+                ;
+            }
+        }
+
+        if (count($members)) {
+            $route_params['members']['list'] = $members;
+        }
 
         // display page
         $this->view->render(

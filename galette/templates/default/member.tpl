@@ -44,6 +44,14 @@
                 <i class="fas fa-link"></i>
                 {_T string="Attach member"}
             </a>
+            <select name="parent_id" id="parent_id" class="nochosen">
+                {if $adh_selected eq 0}
+                <option value="">{_T string="-- select a name --"}</option>
+                {/if}
+                {foreach $members.list as $k=>$v}
+                    <option value="{$k}"{if $contribution->member == $k} selected="selected"{/if}>{$v}</option>
+                {/foreach}
+            </select>
         {else if $member->hasChildren()}
             <strong>{_T string="Parent of:"}</strong>
             {foreach from=$member->children item=child}
@@ -120,6 +128,7 @@
 
 {block name="javascripts"}
         <script type="text/javascript">
+            {include file="js_chosen_adh.tpl" js_chosen_id="#parent_id"}
             $(function() {
                 $('#is_company').change(function(){
                     //console.log(this.checked);
