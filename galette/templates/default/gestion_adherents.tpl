@@ -3,6 +3,14 @@
 {block name="content"}
         <form action="{path_for name="filter-memberslist"}" method="post" id="filtre">
         <div id="listfilter">
+            <div class="fright">
+                {* Check if search is already saved *}
+                <a href="#" class="tooltip action" title="{_T string="Save search"}">
+                    <i class="fa fa-fw fa-2x fa-save"></i>
+                    <span class="sr-only">{_T string="Save search"}</span>
+                </a>
+            </div>
+
 {if !isset($adv_filters) || !$adv_filters}
             <label for="filter_str">{_T string="Search:"}&nbsp;</label>
             <input type="text" name="filter_str" id="filter_str" value="{$filters->filter_str}" type="search" placeholder="{_T string="Enter a value"}"/>&nbsp;
