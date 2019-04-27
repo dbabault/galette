@@ -57,20 +57,16 @@ use Zend\Db\Sql\Expression;
 
 class SavedSearch
 {
-    const PRIVATE = 0;
-    const PUBLIC  = 1;
-
-    const TABLE = 'savedsearches';
+    const TABLE = 'searches';
     const PK = 'search_id';
 
     private $zdb;
     private $id;
     private $name;
-    private $visibility = self::PRIVATE;
+    private $private = true;
     private $parameters = [];
     private $author;
     private $creation_date;
-    private $update_date;
 
     /**
      * Main constructor
@@ -130,11 +126,10 @@ class SavedSearch
         $pk = self::PK;
         $this->id = $rs->$pk;
         $this->name = $rs->type_name;
-        $this->visibility = $rs->visibility;
-        $this->parameters = $rs->parameters;
-        $this->author_id = $rs->author_id;
+        $this->private = $rs->private;
+        $this->parameters = json_decode($rs->parameters);
+        $this->author_id = $rs->id_adh;
         $this->creation_date = $rs->creation_date;
-        $this->update_date = $rs->update_date;
     }
 
     /**
@@ -146,11 +141,10 @@ class SavedSearch
     {
         $data = array(
             'name'          => $this->name,
-            'visibility'    => $this->visibility,
-            'parameters'    => $this->parameters,
+            'private'       => $this->private,
+            'parameters'    => json_encode($this->parameters),
             'author_id'     => $this->author_id,
             'creation_date' => $this->creation_date,
-            'update_date'   => $this->update_date
         );
         try {
             if ($this->id !== null && $this->id > 0) {
@@ -262,5 +256,15 @@ class SavedSearch
                 );
                 break;
         }
+    }
+
+    /**
+     * Is search private?
+     *
+     * @return boolean
+     */
+    public function isPrivate()
+    {
+        return $this->private;
     }
 }

@@ -313,6 +313,19 @@ CREATE TABLE galette_paymenttypes (
   PRIMARY KEY (type_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
+-- table for saved searches
+DROP TABLE IF EXISTS galette_searches;
+CREATE TABLE galette_searches (
+  search_id int(10) unsigned NOT NULL auto_increment,
+  name varchar(100) NOT NULL,
+  private tinyint(1) NOT NULL default 1,
+  parameters text NOT NULL,
+  id_adh int(10) unsigned NOT NULL default '0',
+  creation_date datetime NOT NULL,
+  PRIMARY KEY (search_id),
+  FOREIGN KEY (id_adh) REFERENCES galette_adherents (id_adh) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
 -- table for database version
 DROP TABLE IF EXISTS galette_database;
 CREATE TABLE galette_database (
