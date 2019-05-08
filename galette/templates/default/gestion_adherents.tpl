@@ -3,14 +3,6 @@
 {block name="content"}
         <form action="{path_for name="filter-memberslist"}" method="post" id="filtre">
         <div id="listfilter">
-            <div class="fright">
-                {* Check if search is already saved *}
-                <a href="#" class="tooltip action" title="{_T string="Save search"}">
-                    <i class="fa fa-fw fa-2x fa-save"></i>
-                    <span class="sr-only">{_T string="Save search"}</span>
-                </a>
-            </div>
-
 {if !isset($adv_filters) || !$adv_filters}
             <label for="filter_str">{_T string="Search:"}&nbsp;</label>
             <input type="text" name="filter_str" id="filter_str" value="{$filters->filter_str}" type="search" placeholder="{_T string="Enter a value"}"/>&nbsp;
@@ -31,8 +23,15 @@
                 <option value="{$group->getId()}"{if $filters->group_filter eq $group->getId()} selected="selected"{/if}>{$group->getIndentName()}</option>
 {/foreach}
             </select>
-            <input type="submit" class="inline" value="{_T string="Filter"}"/>
-            <input type="submit" name="clear_filter" class="inline" value="{_T string="Clear filter"}"/>
+            <button type="submit"  class="tooltip action" title="{_T string="Apply filters"}" name="filter">
+                <i class="fa fa-search"></i>
+                {_T string="Filter"}
+            </button>
+            <button type="submit"  class="tooltip action" title="{_T string="Apply filters and save search"}" name="savesearch" id="savesearch">
+                <i class="fa fa-fw fa-save"></i>
+                {_T string="Save"}
+            </button>
+            <input type="submit" name="clear_filter" class="inline tooltip" value="{_T string="Clear filter"}" title="{_T string="Reset all filters to defaults"}"/>
             <div>
                 {_T string="Members that have an email address:"}
                 <input type="radio" name="email_filter" id="filter_dc_email" value="{Galette\Repository\Members::FILTER_DC_EMAIL}"{if $filters->email_filter eq constant('Galette\Repository\Members::FILTER_DC_EMAIL')} checked="checked"{/if}>
@@ -488,6 +487,33 @@
                     return false;
                 });
             }
+
+            $('#savesearch').on('click', function(e) {
+                e.preventDefault();
+                var _form = $('#filtre');
+                var _data = _form.serialize();
+                $.ajax({
+                    url: '{path_for name="saveSearch"}',
+                    type: "POST",
+                    data: _data,
+                    datatype: 'json',
+                    {include file="js_loader.tpl"},
+                    success: function(res) {
+                        if (res.success) {
+                            alert('All done');
+                        } else {
+                            $.ajax({
+                                url: '{path_for name="ajaxMessages"}',
+                                method: "GET",
+                                success: function (message) {
+                                    $('#asso_name').after(message);
+                                }
+                            });
+                        }
+                    }
+                });
+            });
+
         });
 {if $nb_members != 0}
         {include file="js_removal.tpl"}

@@ -438,12 +438,17 @@ DROP TABLE IF EXISTS galette_searches;
 CREATE TABLE galette_searches (
   search_id integer DEFAULT nextval('galette_searches_id_seq'::text) NOT NULL,
   name character varying(100) NOT NULL,
+  form character varying(50) NOT NULL,
   private boolean DEFAULT TRUE,
   parameters text NOT NULL,
+  parameters_sum bytea NOT NULL,
   id_adh integer REFERENCES galette_adherents (id_adh) ON DELETE CASCADE ON UPDATE CASCADE,
   creation_date timestamp NOT NULL,
   PRIMARY KEY (search_id)
 );
+-- add index on table to look for existing searches
+CREATE INDEX galette_searches_idx ON galette_searches (form, private, parameters_sum, id_adh);
+
 
 -- table for database version
 DROP TABLE IF EXISTS galette_database;

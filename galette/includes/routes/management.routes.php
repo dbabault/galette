@@ -3329,3 +3329,51 @@ $app->post(
         }
     }
 )->setname('editPaymentType')->add($authenticate);
+
+$app->post(
+    '/save-search',
+    function ($request, $response) {
+        $post = $request->getParsedBody();
+
+        //reformat, add required infos
+        $post = [
+            'parameters'    => $post,
+            'form'          => 'Adherent',
+            'name'          => str_replace(
+                '%date',
+                date(_T('Y-m-d H:i:s')),
+                _T('Search saved on %date')
+            )
+        ];
+
+        $sco = new Galette\Entity\SavedSearch($this->zdb, $this->login);
+        if ($check = $sco->check($post)) {
+            if (!$res = $sco->store()) {
+                if ($res === false) {
+                    $this->flash->addMessage(
+                        'error_detected',
+                        _T("An SQL error has occurred while storing search.")
+                    );
+                } else {
+                    $this->flash->addMessage(
+                        'warning_detected',
+                        _T("This search is already saved.")
+                    );
+                }
+            } else {
+                $this->flash->addMessage(
+                    'success_detected',
+                    _T("Search has been saved.")
+                );
+            }
+        } else {
+            //report errors
+            foreach ($sco->getErrors() as $error) {
+                $this->flash->addMessage(
+                    'error_detected',
+                    $error
+                );
+            }
+        }
+    }
+)->setName('saveSearch');

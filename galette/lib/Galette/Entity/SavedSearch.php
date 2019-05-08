@@ -38,9 +38,11 @@ namespace Galette\Entity;
 
 use Galette\Core;
 use Galette\Core\Db;
+use Galette\Core\Login;
 use Galette\Repository\PaymentTypes;
 use Analog\Analog;
 use Zend\Db\Sql\Expression;
+use Zend\Db\Sql\Predicate\PredicateSet;
 
 /**
  * Saved search
@@ -67,6 +69,10 @@ class SavedSearch
     private $parameters = [];
     private $author;
     private $creation_date;
+    private $form;
+
+    private $login;
+    private $errors = [];
 
     /**
      * Main constructor
@@ -130,29 +136,79 @@ class SavedSearch
         $this->parameters = json_decode($rs->parameters);
         $this->author_id = $rs->id_adh;
         $this->creation_date = $rs->creation_date;
+        $this->form = $rs->form;
+    }
+
+    /**
+     * Check and set values
+     *
+     * @param array $values Values to set
+     *
+     * @return boolean
+     */
+    public function check($values)
+    {
+        $this->errors = [];
+        $mandatory = [
+            'name'  => _T('Name is mandatory!'),
+            'form'  => _T('Form is mandatory!')
+        ];
+
+        foreach ($values as $key => $value) {
+            if (empty($value) && isset($mandatory[$key])) {
+                $this->errors = $mandatory[$key];
+            }
+            $this->$key = $value;
+        }
+
+        if ($this->id === null) {
+            //set author for new searches
+            $this->author_id = $this->login->id;
+        }
+
+        return (count($this->errors) === 0);
     }
 
     /**
      * Store saved search in database
      *
-     * @return boolean
+     * @return boolean|null
      */
     public function store()
     {
+        $parameters = json_encode($this->parameters);
+        $parameters_sum = sha1($parameters, true);
         $data = array(
-            'name'          => $this->name,
-            'private'       => $this->private,
-            'parameters'    => json_encode($this->parameters),
-            'author_id'     => $this->author_id,
-            'creation_date' => $this->creation_date,
+            'name'              => $this->name,
+            'private'           => $this->private,
+            'parameters'        => $parameters,
+            'parameters_sum'    => $parameters_sum,
+            'id_adh'            => $this->author_id,
+            'creation_date'     => ($this->creation_date !== null ? $this->creation_date : date('Y-m-d H:i:s')),
+            'form'              => $this->form
         );
+
         try {
-            if ($this->id !== null && $this->id > 0) {
-                $update = $this->zdb->update(self::TABLE);
-                $update->set($data)->where(
-                    self::PK . '=' . $this->id
+            $select = $this->zdb->select(self::TABLE);
+            $select
+                ->where([
+                    'form'              => $this->form,
+                    'parameters_sum'    => $parameters_sum,
+                    'id_adh'            => $this->login->id,
+                    'private'           => true
+                ])
+                ->where(['private' => false], PredicateSet::OP_OR)
+                ->limit(1);
+
+            $results = $this->zdb->execute($select);
+            if ($results->count() !==  0) {
+                $result = $results->current();
+                //search already exists
+                Analog::log(
+                    str_replace('%name', $result->name, 'Already saved as "%name"!'),
+                    Analog::INFO
                 );
-                $this->zdb->execute($update);
+                return null;
             } else {
                 $insert = $this->zdb->insert(self::TABLE);
                 $insert->values($data);
@@ -197,7 +253,7 @@ class SavedSearch
             throw $re;
         } catch (\Exception $e) {
             Analog::log(
-                'Unable to delete saved seach ' . $id . ' | ' . $e->getMessage(),
+                'Unable to delete saved search ' . $id . ' | ' . $e->getMessage(),
                 Analog::ERROR
             );
             throw $e;
@@ -213,17 +269,21 @@ class SavedSearch
      */
     public function __get($name)
     {
-        switch ($name) {
-            /*case 'id':
-            case 'name':
-                return $this->$name;
-                break;*/
-            default:
-                Analog::log(
-                    sprintf('Unable to get %class property %property', self::class, $name),
-                    Analog::WARNING
-                );
-                break;
+        $forbidden = [];
+        $virtuals = [];
+        if (in_array($name, $virtuals)
+            || !in_array($name, $forbidden)
+            && isset($this->$name)
+        ) {
+            switch ($name) {
+                default:
+                    Analog::log(
+                        sprintf('Unable to get %class property %property', self::class, $name),
+                        Analog::WARNING
+                    );
+                    return $this->$name;
+                    break;
+            }
         }
     }
 
@@ -238,20 +298,40 @@ class SavedSearch
     public function __set($name, $value)
     {
         switch ($name) {
-            /*case 'name':
-                if (trim($value) === '') {
-                    Analog::log(
-                        'Name cannot be empty',
-                        Analog::WARNING
-                    );
-                } else {
-                    $this->old_name = $this->name;
-                    $this->name     = $value;
+            case 'form':
+                if (!in_array($value, $this->getKnownForms())) {
+                    $this->errors[] = str_replace('%form', $value, _T("Unknown form %form!"));
                 }
-                break;*/
+                $this->form = $value;
+                break;
+            case 'parameters':
+                if (!is_array($value)) {
+                    Analog::log(
+                        'Search parameters must be an array!',
+                        Analog::ERROR
+                    );
+                }
+                $this->parameters = $value;
+                break;
+            case 'name':
+                if (trim($value) === '') {
+                    $this->errors[] = _T("Name cannot be empty!");
+                }
+                $this->name = $value;
+                break;
+            case 'author_id':
+                $this->author_id = (int)$value;
+                break;
+            case 'parameters':
+                $this->parameters = $value;
+                break;
             default:
                 Analog::log(
-                    sprintf('Unable to set %class property %property', self::class, $name),
+                    str_replace(
+                        ['%class', '%property'],
+                        [self::class, $name],
+                        'Unable to set %class property %property'
+                    ),
                     Analog::WARNING
                 );
                 break;
@@ -266,5 +346,27 @@ class SavedSearch
     public function isPrivate()
     {
         return $this->private;
+    }
+
+    /**
+     * Get known forms
+     *
+     * @return array
+     */
+    public function getKnownForms()
+    {
+        return [
+            'Adherent'
+        ];
+    }
+
+    /**
+     * Get errors
+     *
+     * @return array
+     */
+    public function getErrors()
+    {
+        return $this->errors;
     }
 }
