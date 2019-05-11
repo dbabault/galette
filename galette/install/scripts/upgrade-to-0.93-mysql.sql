@@ -16,11 +16,11 @@ CREATE TABLE galette_searches (
   FOREIGN KEY (id_adh) REFERENCES galette_adherents (id_adh) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
-ALTER TABLE galette_adherents CHANGE date_crea_adh date NOT NULL default '1901-01-01',
-ALTER TABLE galette_cotisations CHANGE date_enreg date NOT NULL default '1901-01-01',
-ALTER TABLE galette_cotisations CHANGE date_debut_cotis date NOT NULL default '1901-01-01',
-ALTER TABLE galette_cotisations CHANGE date_fin_cotis date NOT NULL default '1901-01-01',
-ALTER TABLE galette_transactions CHANGE trans_date date NOT NULL default '1901-01-01',
+ALTER TABLE galette_adherents CHANGE date_crea_adh date_crea_adh date NOT NULL default '1901-01-01';
+ALTER TABLE galette_cotisations CHANGE date_enreg date_enreg date NOT NULL default '1901-01-01';
+ALTER TABLE galette_cotisations CHANGE date_debut_cotis date_debut_cotis date NOT NULL default '1901-01-01';
+ALTER TABLE galette_cotisations CHANGE date_fin_cotis date_fin_cotis date NOT NULL default '1901-01-01';
+ALTER TABLE galette_transactions CHANGE trans_date trans_date date NOT NULL default '1901-01-01';
 
 UPDATE galette_database SET version = 0.93;
 SET FOREIGN_KEY_CHECKS=1;

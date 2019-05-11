@@ -156,9 +156,14 @@ class SavedSearch
 
         foreach ($values as $key => $value) {
             if (empty($value) && isset($mandatory[$key])) {
-                $this->errors = $mandatory[$key];
+                $this->errors[] = $mandatory[$key];
             }
             $this->$key = $value;
+            unset($mandatory[$key]);
+        }
+
+        if (count($mandatory)) {
+            $this->errors = array_merge($this->errors, $mandatory);
         }
 
         if ($this->id === null) {
