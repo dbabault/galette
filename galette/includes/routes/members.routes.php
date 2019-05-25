@@ -413,7 +413,7 @@ $app->post(
             return $response
                 ->withStatus(301)
                 ->withHeader('Location', $this->router->pathFor('advanced-search'));
-        } elseif (isset($post['adv_criterias'])) {
+        } elseif (isset($post['adv_criteria'])) {
             return $response
                 ->withStatus(301)
                 ->withHeader('Location', $this->router->pathFor('advanced-search'));

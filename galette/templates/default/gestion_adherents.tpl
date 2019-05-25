@@ -27,7 +27,7 @@
                 <i class="fa fa-search"></i>
                 {_T string="Filter"}
             </button>
-            <button type="submit"  class="tooltip action" title="{_T string="Apply filters and save search"}" name="savesearch" id="savesearch">
+            <button type="submit"  class="tooltip action" title="{_T string="Save selected criteria"}" name="savesearch" id="savesearch">
                 <i class="fa fa-fw fa-save"></i>
                 {_T string="Save"}
             </button>
@@ -44,8 +44,15 @@
 {else}
             <p>
                 <strong>{_T string="Advanced search mode"}</strong>
-                <input type="submit" name="adv_criterias" class="inline" value="{_T string="Change search criterias"}"/>
-                <input type="submit" name="clear_filter" class="inline" value="{_T string="Clear filter"}"/>
+                <button type="submit" class="tooltip action" title="{_T string="Change search criteria"}" name="adv_criteria">
+                    <i class="fa fa-edit"></i>
+                    {_T string="Change criteria"}
+                </button>
+                <button type="submit"  class="tooltip action" title="{_T string="Save current advanced search criteria"}" name="savesearch" id="savesearch">
+                    <i class="fa fa-fw fa-save"></i>
+                    {_T string="Save"}
+                </button>
+                <input type="submit" name="clear_filter" class="inline tooltip" value="{_T string="Clear filter"}" title="{_T string="Reset all filters to defaults"}"/>
                 <br/>
                 <a href="#" id="showhideqry">{_T string="Show/hide query"}</a>
             </p>

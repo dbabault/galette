@@ -225,6 +225,7 @@ class SavedSearch
             }
             return true;
         } catch (\Exception $e) {
+            throw $e;
             Analog::log(
                 'An error occurred storing saved search: ' . $e->getMessage() .
                 "\n" . print_r($data, true),
