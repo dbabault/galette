@@ -71,15 +71,11 @@ class SavedSearch extends atoum
         $this->zdb = new \Galette\Core\Db();
         $this->i18n = new \Galette\Core\I18n();
         $this->session = new \RKA\Session();
-        //$this->login = new \Galette\Core\Login($this->zdb, $this->i18n, $this->session);
 
         $this->login = new \mock\Galette\Core\Login($this->zdb, $this->i18n, $this->session);
         $this->calling($this->login)->isLogged = true;
-        $this->calling($this->login)->__get = function ($name) {
-            return 1;
-        };
-        /*$this->calling($this->login)->isStaff = true;
-        $this->calling($this->login)->isAdmin = true;*/
+        $this->calling($this->login)->isSuperAdmin = true;
+        parent::beforeTestMethod($testMethod);
     }
 
     /**
@@ -92,6 +88,7 @@ class SavedSearch extends atoum
     public function afterTestMethod($testMethod)
     {
         $this->deleteCreated();
+        parent::afterTestMethod($testMethod);
     }
 
     /**
@@ -148,120 +145,5 @@ class SavedSearch extends atoum
         $this->boolean($saved->store())->isTrue();
         //store again, got a duplicate
         $this->variable($saved->store())->isNull();
-
-        /*$this->integer(
-            $status->add('Active member', 81)
-        )->isIdenticalTo(-2);
-
-        $this->boolean(
-            $status->add('Test status', 81)
-        )->isTrue();
-
-        $select = $this->zdb->select(\Galette\Core\L10n::TABLE);
-        $select->where(
-            array(
-                'text_orig'     => 'Test status'
-            )
-        );
-        $results = $this->zdb->execute($select);
-        $result = $results->current();
-
-        $this->array((array)$result)
-            ->string['text_orig']->isIdenticalTo('Test status');
-
-        $this->remove[] = $status->id;
-        $id = $status->id;
-
-        $this->integer(
-            $status->update(42, 'Active member', 81)
-        )->isIdenticalTo(\Galette\Entity\Entitled::ID_NOT_EXITS);
-
-        $this->boolean(
-            $status->update($id, 'Tested status', 81)
-        )->isTrue();
-
-        $this->string(
-            $status->getLabel($id)
-        )->isIdenticalTo('Tested status');
-
-        $select = $this->zdb->select(\Galette\Core\L10n::TABLE);
-        $select->where(
-            array(
-                'text_orig'     => 'Tested status'
-            )
-        );
-        $results = $this->zdb->execute($select);
-        $result = $results->current();
-
-        $this->array((array)$result)
-            ->string['text_orig']->isIdenticalTo('Tested status');
-
-        $this->integer(
-            $status->delete(42)
-        )->isIdenticalTo(\Galette\Entity\Entitled::ID_NOT_EXITS);
-
-        $this->exception(
-            function () use ($status) {
-                $status->delete($status::DEFAULT_STATUS);
-            }
-        )
-            ->hasMessage('You cannot delete default status!')
-            ->isInstanceOf('\RuntimeException');
-
-        $this->boolean(
-            $status->delete($id)
-        )->isTrue();
-
-        $select = $this->zdb->select(\Galette\Core\L10n::TABLE);
-        $select->where(
-            array(
-                'text_orig'     => 'Tested status'
-            )
-        );
-        $results = $this->zdb->execute($select);
-        $this->integer($results->count())->isIdenticalTo(0);*/
     }
-
-    /**
-     * Test getList
-     *
-     * @return void
-     */
-    /*public function testGetList()
-    {
-        $status = new \Galette\Entity\Status($this->zdb);
-
-        $list = $status->getList();
-        $this->array($list)->hasSize(10);
-
-        if ($this->zdb->isPostgres()) {
-            $select = $this->zdb->select($status::TABLE . '_id_seq');
-            $select->columns(['last_value']);
-            $results = $this->zdb->execute($select);
-            $result = $results->current();
-            $this->integer($result->last_value)->isGreaterThanOrEqualTo(10, 'Incorrect status sequence');
-
-            $this->zdb->db->query(
-                'SELECT setval(\'' . PREFIX_DB . $status::TABLE . '_id_seq\', 1)',
-                Adapter::QUERY_MODE_EXECUTE
-            );
-        }
-
-        //reinstall status
-        $status->installInit();
-
-        $list = $status->getList();
-        $this->array($list)->hasSize(10);
-
-        if ($this->zdb->isPostgres()) {
-            $select = $this->zdb->select($status::TABLE . '_id_seq');
-            $select->columns(['last_value']);
-            $results = $this->zdb->execute($select);
-            $result = $results->current();
-            $this->integer($result->last_value)->isGreaterThanOrEqualTo(
-                10,
-                'Incorrect status sequence ' . $result->last_value
-            );
-        }
-    }*/
 }
