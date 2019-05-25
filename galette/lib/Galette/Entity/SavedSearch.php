@@ -206,7 +206,7 @@ class SavedSearch
                 ->where([
                     'form'              => $this->form,
                     'parameters_sum'    => $parameters_sum,
-                    'id_adh'            => $this->login->id,
+                    'id_adh'            => $this->author_id,
                     'private'           => true
                 ])
                 ->where(['private' => false], PredicateSet::OP_OR)
