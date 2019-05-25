@@ -9,7 +9,7 @@ CREATE TABLE galette_searches (
   private tinyint(1) NOT NULL default 1,
   parameters text NOT NULL,
   parameters_sum binary(20),
-  id_adh int(10) unsigned NOT NULL default '0',
+  id_adh int(10) unsigned,
   creation_date datetime NOT NULL,
   PRIMARY KEY (search_id),
   KEY (form, private, parameters_sum, id_adh),

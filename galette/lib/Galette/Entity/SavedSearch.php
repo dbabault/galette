@@ -105,7 +105,14 @@ class SavedSearch
     {
         try {
             $select = $this->zdb->select(self::TABLE);
-            $select->limit(1)->where(self::PK . ' = ' . $id);
+            $where = [
+                self::PK        => $id,
+            ];
+            if (!$this->login->isSuperAdmin()) {
+                //restrict on member id exept for super admin
+                $where[Adherent::PK] = $this->login->id;
+            }
+            $select->limit(1)->where($where);
 
             $results = $this->zdb->execute($select);
             $res = $results->current();
@@ -166,7 +173,7 @@ class SavedSearch
             $this->errors = array_merge($this->errors, $mandatory);
         }
 
-        if ($this->id === null) {
+        if ($this->id === null && $this->login->id > 0) {
             //set author for new searches
             $this->author_id = $this->login->id;
         }
