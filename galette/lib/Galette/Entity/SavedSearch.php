@@ -173,7 +173,7 @@ class SavedSearch
             $this->errors = array_merge($this->errors, $mandatory);
         }
 
-        if ($this->id === null &&! $this->login->id->isSuperAdmin()) {
+        if ($this->id === null &&! $this->login->isSuperAdmin()) {
             //set author for new searches
             $this->author_id = $this->login->id;
         }
