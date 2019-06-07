@@ -63,7 +63,7 @@
             {$nb_members} {if $nb_members != 1}{_T string="members"}{else}{_T string="member"}{/if}
             <div class="fright">
                 <label for="nbshow">{_T string="Records per page:"}</label>
-                <select name="nbshow" id="nbshow">
+                <select name="nbshow" id="nbshow" style="width:80px;">
                     {html_options options=$nbshow_options selected=$numrows}
                 </select>
                 <noscript> <span><input type="submit" value="{_T string="Change"}" /></span></noscript>
